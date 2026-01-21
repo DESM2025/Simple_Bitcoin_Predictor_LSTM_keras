@@ -10,7 +10,7 @@ from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_PATH = os.path.join(BASE_DIR, '..', 'data', 'bitcoin_data.csv')
+DATA_PATH = os.path.join(BASE_DIR, '..', 'data', 'clp_data.csv')
 MODEL_DIR = os.path.join(BASE_DIR, '..', 'models')
 os.makedirs(MODEL_DIR, exist_ok=True)
 
@@ -20,7 +20,7 @@ def train_model():
 
     scaler = MinMaxScaler(feature_range=(0,1))
     scaled_data = scaler.fit_transform(data)
-    scaler_path = os.path.join(MODEL_DIR, 'scaler.gz')
+    scaler_path = os.path.join(MODEL_DIR, 'scaler_clp.gz')
     joblib.dump(scaler, scaler_path)
     
     #ventanas
@@ -39,20 +39,20 @@ def train_model():
     #LSTM 3 capas
     model = Sequential()
     #capa 1
-    model.add(LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1], 1))) #50 neuronas, sigueinte capa recurente= true
+    model.add(LSTM(units=45, return_sequences=True, input_shape=(x_train.shape[1], 1))) #45 neuronas en ese caso al ser clp, sigueinte capa recurente= true
     
-    model.add(Dropout(0.2)) #dropout 20%
+    model.add(Dropout(0.25)) #dropout 25%
 
     #capa 2
-    model.add(LSTM(units=50, return_sequences=False)) #ultima capa recurente=false
-    model.add(Dropout(0.2))
+    model.add(LSTM(units=45, return_sequences=False)) #ultima capa recurente=false
+    model.add(Dropout(0.25))
 
     #capa 3 densa
     model.add(Dense(units=1)) #1 precio
 
     #compilar/optimizador y loss/checkpoint mejor modelo y metrica mae
     model.compile(optimizer='adam', loss='mean_squared_error', metrics=['mae'])  #model.compile(optimizer='adam', loss='mean_squared_error')
-    best_model_path = os.path.join(MODEL_DIR, 'bitcoin_lstm.h5')
+    best_model_path = os.path.join(MODEL_DIR, 'clp_lstm.h5')
     checkpoint = ModelCheckpoint(
         filepath=best_model_path,
         monitor='val_loss',
@@ -65,7 +65,7 @@ def train_model():
     #early stoping
     early_stopping = EarlyStopping(
     monitor='val_loss',
-    patience=15,        # espera 15 epocas
+    patience=10,        # espera 10 epocas
     restore_best_weights=True
     )
     
@@ -74,7 +74,7 @@ def train_model():
     #model.fit(x_train, y_train, epochs=200, batch_size=31,validation_split=0.1,callbacks=[checkpoint])
 
     #guardar ultimo modelo
-    final_model_path = os.path.join(MODEL_DIR, 'bitcoin_lstm_final.h5')
+    final_model_path = os.path.join(MODEL_DIR, 'clp_lstm_final.h5')
     model.save(final_model_path)
     print(f"el modelo final se guardo en {{final_model_path}}")
     print(f"el mejor modelo se guardo en {{best_model_path}}")

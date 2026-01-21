@@ -7,9 +7,9 @@ from tensorflow.keras.models import load_model
 from sklearn.preprocessing import MinMaxScaler
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_PATH = os.path.join(BASE_DIR, '..', 'data', 'bitcoin_data.csv')
-MODEL_PATH = os.path.join(BASE_DIR, '..', 'models', 'bitcoin_lstm.h5')
-SCALER_PATH = os.path.join(BASE_DIR, '..', 'models', 'scaler.gz')
+DATA_PATH = os.path.join(BASE_DIR, '..', 'data', 'clp_data.csv')
+MODEL_PATH = os.path.join(BASE_DIR, '..', 'models', 'clp_lstm.h5')
+SCALER_PATH = os.path.join(BASE_DIR, '..', 'models', 'scaler_clp.gz')
 
 def fp():
 
@@ -24,7 +24,7 @@ def fp():
     x_test = []
     y_test = []
 
-    start_index = len(scaled_data) - 180 #6 meses
+    start_index = len(scaled_data) - 360 #6 meses
 
     for i in range(start_index, len(scaled_data)):
         x_test.append(scaled_data[i-PD:i, 0])
@@ -44,12 +44,12 @@ def fp():
 
     tomorrow_prediction = model.predict(l_d)
     tomorrow_price = scaler.inverse_transform(tomorrow_prediction)
-    print(f"prediccion del valor delbitcoin mañana: {tomorrow_price[0][0]:.2f} USD")
+    print(f"prediccion del valor del peso chileno mañana: {tomorrow_price[0][0]:.2f} USD")
 
     plt.figure(figsize=(12, 6))
     plt.plot(real_prices, color='black', label='Precio Real')
     plt.plot(predicted_prices, color='green', label='Predicción IA')
-    plt.title(f'Validacion del modelo en 180 dias(Ventana de {PD} dias)')
+    plt.title(f'Validacion del modelo en 360 dias(Ventana de {PD} dias)')
     plt.xlabel('Dias')
     plt.ylabel('Dolar')
     plt.legend()
@@ -58,5 +58,3 @@ def fp():
 
 if __name__ == "__main__":
     fp()
-
-
