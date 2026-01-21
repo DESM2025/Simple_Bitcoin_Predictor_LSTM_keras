@@ -32,7 +32,7 @@ def download_data():
 def download_data2():
     print("descargando el historal de precio del peso chileno desde yahoo")
     #periodo el maximo posible y el valor en intervalos de 1 dia para evitar ruido,todo esto con yahoo
-    df = yf.download('USD-CLP', period='max', interval='1d')
+    df = yf.download('CLP=X', period='max', interval='1d')
 
     if len(df) > 0:
        print(f"se descargaron en total {len(df)}")
@@ -47,10 +47,11 @@ def download_data2():
     df = pd.DataFrame(df)
     df.columns = ['Close']
     #guardar en un csv
-    file_path = os.path.join(DATA_DIR, 'bitcoin_data.csv')
+    file_path = os.path.join(DATA_DIR, 'clp_data.csv')
     df.to_csv(file_path)
     print(f"los datos descargars se guardaron en {file_path}")
 
 if __name__ == "__main__":
     download_data()
+    download_data2()
 
