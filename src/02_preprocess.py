@@ -16,17 +16,17 @@ def prepare_data():
     scaler = MinMaxScaler(feature_range=(0,1))
     scaled_data = scaler.fit_transform(data)
 
-    #crear las ventanas y recorrer los dias
+    #crear las ventanas 
     prediction_days = 100
     x_train = []
     y_train = []
-
+    #cada xtrain tiene los dias anteriores  e ytrain el valor a predecir
     for i in range(prediction_days, len(scaled_data)):
-        x_train.append(scaled_data[i-prediction_days:i,0]) #toma desde i-100 hasta i dias
+        x_train.append(scaled_data[i-prediction_days:i,0]) #toma desde i-prediccion hasta i dias
         y_train.append(scaled_data[i, 0])  #toma el i dia exacto a predecir
     
     x_train, y_train = np.array(x_train), np.array(y_train) #convertir a numpy
-    #reshape [Muestras(ejemplos), Pasos de Tiempo(100 dias), Features(1 Close)]
+    #reshape [Muestras(samples, los datos- prediction), Pasos de Tiempo(timestep dias), Features(1 Close)]
     x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
 
     print(f"entrada x_train {x_train.shape}")

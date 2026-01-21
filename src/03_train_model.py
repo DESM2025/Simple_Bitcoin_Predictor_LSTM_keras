@@ -3,10 +3,11 @@ import pandas as pd
 import os
 import tensorflow as tf
 import joblib
+import matplotlib.pyplot as plt
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
 from sklearn.preprocessing import MinMaxScaler
-from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.join(BASE_DIR, '..', 'data', 'bitcoin_data.csv')
@@ -23,7 +24,7 @@ def train_model():
     joblib.dump(scaler, scaler_path)
     
     #ventanas
-    PD = 100 #dias
+    PD = 80 #dias
     x_train = []
     y_train = []
 
@@ -32,9 +33,10 @@ def train_model():
         y_train.append(scaled_data[i, 0])
 
     x_train, y_train = np.array(x_train), np.array(y_train)
+    #reshape [Muestras(samples), Pasos de Tiempo(timestep dias), Features(1 Close)]
     x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
 
-    #LSTM 3
+    #LSTM 3 capas
     model = Sequential()
     #capa 1
     model.add(LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1], 1))) #50 neuronas, sigueinte capa recurente= true
@@ -48,8 +50,8 @@ def train_model():
     #capa 3 densa
     model.add(Dense(units=1)) #1 precio
 
-    #compilar/optimizador y loss/guardar mejor modelo
-    model.compile(optimizer='adam', loss='mean_squared_error')
+    #compilar/optimizador y loss/checkpoint mejor modelo y metrica mae
+    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['mae'])  #model.compile(optimizer='adam', loss='mean_squared_error')
     best_model_path = os.path.join(MODEL_DIR, 'bitcoin_lstm.h5')
     checkpoint = ModelCheckpoint(
         filepath=best_model_path,
@@ -59,15 +61,34 @@ def train_model():
         mode='min'
     )
     print("entrenando modelo")
-
-    #30 epocas en batch de 31 dias, activar checkpoint
-    model.fit(x_train, y_train, epochs=30, batch_size=31,validation_split=0.1,callbacks=[checkpoint])
+    
+    #early stoping
+    early_stopping = EarlyStopping(
+    monitor='val_loss',
+    patience=10,        # espera 10 epocas
+    restore_best_weights=True
+    )
+    
+    #guardar entrenamiento en history/0 epocas en batch de 31 dias, activar checkpoint
+    history = model.fit(x_train, y_train, epochs=100, batch_size=90, validation_split=0.1, callbacks=[checkpoint, early_stopping] )
+    #model.fit(x_train, y_train, epochs=200, batch_size=31,validation_split=0.1,callbacks=[checkpoint])
 
     #guardar ultimo modelo
     final_model_path = os.path.join(MODEL_DIR, 'bitcoin_lstm_final.h5')
     model.save(final_model_path)
     print(f"el modelo final se guardo en {{final_model_path}}")
     print(f"el mejor modelo se guardo en {{best_model_path}}")
+    print(f"el entrenamiento se detuvo en la epoca {len(history.epoch)}")
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(history.history['loss'], label='Training Loss (Entrenamiento)', color='blue')
+    plt.plot(history.history['val_loss'], label='Validation Loss (Validación)', color='orange')
+    plt.title('Curva de Aprendizaje: Loss vs Val_Loss')
+    plt.xlabel('Épocas')
+    plt.ylabel('Error (Loss)')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
 if __name__ == "__main__":
     train_model()
