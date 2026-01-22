@@ -25,7 +25,7 @@ def train_model():
     joblib.dump(scaler, scaler_path)
     
     #ventanas
-    PD = 80 #dias
+    PD = 90 #dias
     x_train = []
     y_train = []
 
@@ -42,11 +42,11 @@ def train_model():
     #capa 1
     model.add(LSTM(units=70, return_sequences=True, input_shape=(x_train.shape[1], 1))) # neuronas en este caso al ser clp, sigueinte capa recurente= true
     
-    model.add(Dropout(0.4)) #dropout, aqui sirvio un dropout mayor que el del bitcoin
+    model.add(Dropout(0.35)) #dropout, aqui sirvio un dropout mayor que el del bitcoin
 
     #capa 2
     model.add(LSTM(units=60, return_sequences=False)) #ultima capa recurente=false
-    model.add(Dropout(0.4))
+    model.add(Dropout(0.35))
 
     #capa 3 densa
     model.add(Dense(units=16, activation='relu'))
