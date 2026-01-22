@@ -1,4 +1,4 @@
-Este pequeño proyecto utiliza una red neuronal recurente (LSTM) de forma simple y univariable para predecir el precio de cierre del bitcoin y peso chileno  
+Este pequeño proyecto utiliza una red neuronal recurente (LSTM) simple y univariado para predecir el precio de cierre del bitcoin y peso chileno  
 El modelo se entrena con datos historicos y utiliza una ventana de observación de 80 dias para proyectar el valor del dia siguiente
 Incluye un dashboard  en Streamlit para visualizar datos histricos 
 
