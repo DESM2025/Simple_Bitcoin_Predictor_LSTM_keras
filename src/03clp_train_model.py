@@ -25,7 +25,7 @@ def train_model():
     joblib.dump(scaler, scaler_path)
     
     #ventanas
-    PD = 90 #dias
+    PD = 14 #dias
     x_train = []
     y_train = []
 
