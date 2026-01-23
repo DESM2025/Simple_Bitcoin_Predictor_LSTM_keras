@@ -4,7 +4,6 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, '..', 'data')
-#comprobar o crear carpeta 
 os.makedirs(DATA_DIR, exist_ok=True)
 
 def download_data():
@@ -19,8 +18,7 @@ def download_data():
         return
     
     #limpieza, dejar solo la columna con el precio de cierre close
-    if isinstance(df.columns, pd.MultiIndex):
-        df = df['Close']
+    if isinstance(df.columns, pd.MultiIndex): df = df['Close']
     #comprobar que el df este limpio con una columna close
     df = pd.DataFrame(df)
     df.columns = ['Close']
@@ -41,8 +39,7 @@ def download_data2():
         return
     
     #limpieza, dejar solo la columna con el precio de cierre close
-    if isinstance(df.columns, pd.MultiIndex):
-        df = df['Close']
+    if isinstance(df.columns, pd.MultiIndex): df = df['Close']
     #comprobar que el df este limpio con una columna close
     df = pd.DataFrame(df)
     df.columns = ['Close']

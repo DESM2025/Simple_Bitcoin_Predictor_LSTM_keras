@@ -8,7 +8,7 @@ from tensorflow.keras.models import load_model
 from datetime import timedelta
 
 st.set_page_config(
-    page_title="prediccion simple",
+    page_title="Prediccion simple",
     page_icon="",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -35,7 +35,7 @@ ASSETS_CONFIG = {
         "symbol": "CLP",
         "color_main": "#ff7f0e", 
         "color_pred": "#2ca02c", 
-        "pd_days": 80 
+        "pd_days": 14 
     }
 }
 
@@ -101,7 +101,7 @@ def main():
         pred_scalar = model.predict(X_input, verbose=0)
         pred_price = scaler.inverse_transform(pred_scalar)[0][0]
     except Exception as e:
-        st.error(f"Error en la prediccin")
+        st.error(f"Error en la prediccion")
         st.error(str(e))
         return
 
@@ -113,7 +113,7 @@ def main():
 
     # visualizacion
     st.title(f"Prediccion para {selected_asset}")
-    st.markdown(f"Proyección para el cierre del: **{last_date + timedelta(days=1):%Y-%m-%d}**")
+    st.markdown(f"Proyeccion para el cierre del **{last_date + timedelta(days=1):%Y-%m-%d}**")
 
     col1, col2, col3 = st.columns(3)
     

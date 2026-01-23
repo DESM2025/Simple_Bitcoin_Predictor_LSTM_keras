@@ -23,8 +23,8 @@ def train_model():
     scaler_path = os.path.join(MODEL_DIR, 'scaler.gz')
     joblib.dump(scaler, scaler_path)
     
-    #ventanas
-    PD = 80 #dias
+    #ventana
+    PD = 80 
     x_train = []
     y_train = []
 
@@ -36,7 +36,7 @@ def train_model():
     #reshape [Muestras(samples), Pasos de Tiempo(timestep dias), Features(1 Close)]
     x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
 
-    #LSTM 3 capas
+    #LSTM 
     model = Sequential()
     #capa 1
     model.add(LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1], 1))) #50 neuronas, sigueinte capa recurente= true
@@ -48,9 +48,9 @@ def train_model():
     model.add(Dropout(0.2))
 
     #capa 3 densa
-    model.add(Dense(units=1)) #1 precio
+    model.add(Dense(units=1)) #precio
 
-    #compilar/optimizador y loss/checkpoint mejor modelo y metrica mae
+    #compilar/optimizador/loss/checkpoint de mejor modelo y metrica mae
     model.compile(optimizer='adam', loss='mean_squared_error', metrics=['mae'])  #model.compile(optimizer='adam', loss='mean_squared_error')
     best_model_path = os.path.join(MODEL_DIR, 'bitcoin_lstm.h5')
     checkpoint = ModelCheckpoint(
@@ -60,16 +60,15 @@ def train_model():
         save_best_only=True,
         mode='min'
     )
-    print("entrenando modelo")
-    
+
     #early stoping
     early_stopping = EarlyStopping(
     monitor='val_loss',
-    patience=15,        # espera 15 epocas
+    patience=15,        #epocas
     restore_best_weights=True
     )
     
-    #guardar entrenamiento en history/0 epocas en batch de 31 dias, activar checkpoint
+    #guardar entrenamiento en history/epocas/batch y activar checkpoint
     history = model.fit(x_train, y_train, epochs=100, batch_size=90, validation_split=0.1, callbacks=[checkpoint, early_stopping] )
     #model.fit(x_train, y_train, epochs=200, batch_size=31,validation_split=0.1,callbacks=[checkpoint])
 
@@ -79,13 +78,14 @@ def train_model():
     print(f"el modelo final se guardo en {{final_model_path}}")
     print(f"el mejor modelo se guardo en {{best_model_path}}")
     print(f"el entrenamiento se detuvo en la epoca {len(history.epoch)}")
-
+ 
+    #grafico de entrenamiento
     plt.figure(figsize=(10, 5))
-    plt.plot(history.history['loss'], label='Training Loss (Entrenamiento)', color='blue')
-    plt.plot(history.history['val_loss'], label='Validation Loss (Validación)', color='orange')
-    plt.title('Curva de Aprendizaje: Loss vs Val_Loss')
+    plt.plot(history.history['loss'], label='Training Loss', color='blue')
+    plt.plot(history.history['val_loss'], label='Validation Loss)', color='orange')
+    plt.title('Curva de Aprendizaje')
     plt.xlabel('Epocas')
-    plt.ylabel('Error (Loss)')
+    plt.ylabel('Error Loss')
     plt.legend()
     plt.grid(True)
     plt.show()

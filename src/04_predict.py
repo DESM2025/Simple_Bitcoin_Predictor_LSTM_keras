@@ -20,11 +20,11 @@ def fp():
     data = df.values
     scaled_data = scaler.transform(data)
 
-    PD = 80 # debe ser igual al de train
+    PD = 80 # debe ser igual al que se uso en el entrenamiento
     x_test = []
     y_test = []
 
-    start_index = len(scaled_data) - 180 #6 meses
+    start_index = len(scaled_data) - 180 #dias
 
     for i in range(start_index, len(scaled_data)):
         x_test.append(scaled_data[i-PD:i, 0])
@@ -47,8 +47,8 @@ def fp():
     print(f"prediccion del valor delbitcoin mañana: {tomorrow_price[0][0]:.2f} USD")
 
     plt.figure(figsize=(12, 6))
-    plt.plot(real_prices, color='black', label='Precio Real')
-    plt.plot(predicted_prices, color='green', label='Predicción IA')
+    plt.plot(real_prices, color='black', label='Precio real')
+    plt.plot(predicted_prices, color='green', label='Prediccion del modelo')
     plt.title(f'Validacion del modelo en 180 dias(Ventana de {PD} dias)')
     plt.xlabel('Dias')
     plt.ylabel('Dolar')

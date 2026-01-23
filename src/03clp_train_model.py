@@ -24,8 +24,8 @@ def train_model():
     scaler_path = os.path.join(MODEL_DIR, 'scaler_clp.gz')
     joblib.dump(scaler, scaler_path)
     
-    #ventanas
-    PD = 14 #dias
+    #ventana, funciono mejor una ventana mas chica
+    PD = 14 
     x_train = []
     y_train = []
 
@@ -37,10 +37,10 @@ def train_model():
     #reshape [Muestras(samples), Pasos de Tiempo(timestep dias), Features(1 Close)]
     x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
 
-    #LSTM 3 capas
+    #LSTM 
     model = Sequential()
     #capa 1
-    model.add(LSTM(units=70, return_sequences=True, input_shape=(x_train.shape[1], 1))) # neuronas en este caso al ser clp, sigueinte capa recurente= true
+    model.add(LSTM(units=70, return_sequences=True, input_shape=(x_train.shape[1], 1))) # naumente neuronas, sigueinte capa recurente= true
     
     model.add(Dropout(0.35)) #dropout, aqui sirvio un dropout mayor que el del bitcoin
 
@@ -49,8 +49,8 @@ def train_model():
     model.add(Dropout(0.35))
 
     #capa 3 densa
-    model.add(Dense(units=16, activation='relu'))
-    model.add(Dense(units=1)) #1 precio
+    model.add(Dense(units=16, activation='relu')) #uso de relu por que dio mejor resutlado
+    model.add(Dense(units=1)) #precio
 
     #compilar/optimizador y loss/checkpoint mejor modelo y metrica mae
     #opt = Adam(learning_rate=0.0008)
@@ -63,7 +63,6 @@ def train_model():
         save_best_only=True,
         mode='min'
     )
-    print("entrenando modelo")
     
     #early stoping
     early_stopping = EarlyStopping(
@@ -72,23 +71,24 @@ def train_model():
     restore_best_weights=True
     )
     
-    #guardar entrenamiento en history/0 epocas en batch de n , activar checkpoint
+    #guardar entrenamiento en history/epocas/ baje batch para mejor resultado batch, activar checkpoint
     history = model.fit(x_train, y_train, epochs=100, batch_size=30, validation_split=0.1, callbacks=[checkpoint, early_stopping] )
     #model.fit(x_train, y_train, epochs=200, batch_size=31,validation_split=0.1,callbacks=[checkpoint], shuffle=False)
-    #bajar el batch a 31 dio mejor resultado 
+    
     #guardar ultimo modelo
     final_model_path = os.path.join(MODEL_DIR, 'clp_lstm_final.h5')
     model.save(final_model_path)
     print(f"el modelo final se guardo en {{final_model_path}}")
     print(f"el mejor modelo se guardo en {{best_model_path}}")
     print(f"el entrenamiento se detuvo en la epoca {len(history.epoch)}")
-
+    
+    #grafico de entrenamiento
     plt.figure(figsize=(10, 5))
-    plt.plot(history.history['loss'], label='Training Loss (Entrenamiento)', color='blue')
-    plt.plot(history.history['val_loss'], label='Validation Loss (Validación)', color='orange')
-    plt.title('Curva de Aprendizaje: Loss vs Val_Loss')
+    plt.plot(history.history['loss'], label='Training Loss', color='blue')
+    plt.plot(history.history['val_loss'], label='Validation Loss', color='orange')
+    plt.title('Curva de Aprendizaje')
     plt.xlabel('Epocas')
-    plt.ylabel('Error (Loss)')
+    plt.ylabel('Error Loss')
     plt.legend()
     plt.grid(True)
     plt.show()

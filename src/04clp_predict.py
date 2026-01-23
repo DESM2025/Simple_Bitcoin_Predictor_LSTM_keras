@@ -24,7 +24,7 @@ def fp():
     x_test = []
     y_test = []
 
-    start_index = len(scaled_data) - 360 #6 meses
+    start_index = len(scaled_data) - 360 #360 dias
 
     for i in range(start_index, len(scaled_data)):
         x_test.append(scaled_data[i-PD:i, 0])
@@ -47,8 +47,8 @@ def fp():
     print(f"prediccion del valor del peso chileno mañana: {tomorrow_price[0][0]:.2f} USD")
 
     plt.figure(figsize=(12, 6))
-    plt.plot(real_prices, color='black', label='Precio Real')
-    plt.plot(predicted_prices, color='green', label='Predicción IA')
+    plt.plot(real_prices, color='black', label='Precio real')
+    plt.plot(predicted_prices, color='green', label='Prediccion del modelo')
     plt.title(f'Validacion del modelo en 360 dias(Ventana de {PD} dias)')
     plt.xlabel('Dias')
     plt.ylabel('Dolar')
