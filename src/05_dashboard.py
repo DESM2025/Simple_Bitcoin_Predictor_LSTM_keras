@@ -99,7 +99,10 @@ def main():
         X_input = last_scaled.reshape(1, PD, 1)
         
         pred_scalar = model.predict(X_input, verbose=0)
-        pred_price = scaler.inverse_transform(pred_scalar)[0][0]
+
+        pred_scalar_reshaped = pred_scalar.reshape(-1, 1)
+        pred_prices_list = scaler.inverse_transform(pred_scalar_reshaped)
+        pred_price_d1 = pred_prices_list[0][0]
     except Exception as e:
         st.error(f"Error en la prediccion")
         st.error(str(e))
@@ -108,7 +111,7 @@ def main():
     # Calculos para KPI
     last_real_price = df['Close'].iloc[-1]
     last_date = df.index[-1]
-    delta = pred_price - last_real_price
+    delta = pred_price_d1 - last_real_price
     delta_percent = (delta / last_real_price) * 100
 
     # visualizacion
@@ -126,7 +129,7 @@ def main():
     with col2:
         st.metric(
             label="Prediccion para mañana", 
-            value=f"{config['symbol']} {pred_price:,.2f}",
+            value=f"{config['symbol']} {pred_price_d1:,.2f}",
             delta=f"{delta:,.2f} ({delta_percent:.2f}%)"
         )
     
@@ -151,11 +154,13 @@ def main():
             line=dict(color=config["color_main"], width=2)
         ))
         
-        # Predicción
-        future_date = last_date + timedelta(days=1)
+        # Prediccion
+        future_dates = [last_date + timedelta(days=i) for i in range(1, 3)]
+        future_prices = [p[0] for p in pred_prices_list]
+
         fig.add_trace(go.Scatter(
-            x=[last_date, future_date], 
-            y=[last_real_price, pred_price],
+            x=[last_date] + future_dates,
+            y=[last_real_price] + future_prices,
             mode='lines+markers',
             name='Prediccion del modelo',
             line=dict(color=config["color_pred"], width=2, dash='dot'),

@@ -35,6 +35,8 @@ def fp():
 
     #prediccion sobre datos conocidos
     predicted_prices = model.predict(x_test)
+    # quedarse solo con la columna 0  para que el scaler no falle 
+    predicted_prices = predicted_prices[:, 0].reshape(-1, 1)
     #invertir escala
     predicted_prices = scaler.inverse_transform(predicted_prices)
     real_prices = scaler.inverse_transform(np.array(y_test).reshape(-1, 1))
@@ -43,8 +45,17 @@ def fp():
     l_d = l_d.reshape(1, PD, 1)
 
     tomorrow_prediction = model.predict(l_d)
+    tomorrow_prediction = tomorrow_prediction.reshape(-1, 1) # girar los datos para poder desescalar los dias juntos
     tomorrow_price = scaler.inverse_transform(tomorrow_prediction)
-    print(f"prediccion del valor delbitcoin mañana: {tomorrow_price[0][0]:.2f} USD")
+
+    #obtener el precio del ultimo dia real
+    last_real_scaled = scaled_data[-1]
+    last_real_price = scaler.inverse_transform(last_real_scaled.reshape(-1, 1))
+    print(f"precio de cierre de hoy {last_real_price[0][0]:,.2f} USD")
+
+    print("prediccion del valor del bitocoin los siguientes dias")
+    print(f"prediccion mañana: {tomorrow_price[0][0]:.2f} USD")
+    print(f"prediccion Pasado: {tomorrow_price[1][0]:.2f} USD")
 
     plt.figure(figsize=(12, 6))
     plt.plot(real_prices, color='black', label='Precio real')

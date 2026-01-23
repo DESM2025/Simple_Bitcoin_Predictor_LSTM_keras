@@ -25,12 +25,15 @@ def train_model():
     
     #ventana
     PD = 80 
+    #dias a predecir
+    PCD = 2
+
     x_train = []
     y_train = []
 
-    for i in range(PD, len(scaled_data)):
-        x_train.append(scaled_data[i-PD:i, 0])
-        y_train.append(scaled_data[i, 0])
+    for i in range(PD, len(scaled_data) - PCD + 1):
+        x_train.append(scaled_data[i-PD:i, 0])  #input de PD dias
+        y_train.append(scaled_data[i:i+PCD, 0]) #targer PCD dias
 
     x_train, y_train = np.array(x_train), np.array(y_train)
     #reshape [Muestras(samples), Pasos de Tiempo(timestep dias), Features(1 Close)]
@@ -48,7 +51,7 @@ def train_model():
     model.add(Dropout(0.2))
 
     #capa 3 densa
-    model.add(Dense(units=1)) #precio
+    model.add(Dense(units=PCD)) #precio
 
     #compilar/optimizador/loss/checkpoint de mejor modelo y metrica mae
     model.compile(optimizer='adam', loss='mean_squared_error', metrics=['mae'])  #model.compile(optimizer='adam', loss='mean_squared_error')
@@ -69,7 +72,7 @@ def train_model():
     )
     
     #guardar entrenamiento en history/epocas/batch y activar checkpoint
-    history = model.fit(x_train, y_train, epochs=100, batch_size=90, validation_split=0.1, callbacks=[checkpoint, early_stopping] )
+    history = model.fit(x_train, y_train, epochs=150, batch_size=90, validation_split=0.1, callbacks=[checkpoint, early_stopping] )
     #model.fit(x_train, y_train, epochs=200, batch_size=31,validation_split=0.1,callbacks=[checkpoint])
 
     #guardar ultimo modelo

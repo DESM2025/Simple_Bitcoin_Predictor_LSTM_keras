@@ -25,13 +25,16 @@ def train_model():
     joblib.dump(scaler, scaler_path)
     
     #ventana, funciono mejor una ventana mas chica
-    PD = 14 
+    PD = 14
+    #dias a predecir
+    PDC = 2
+    
     x_train = []
     y_train = []
 
-    for i in range(PD, len(scaled_data)):
+    for i in range(PD, len(scaled_data) - PDC + 1):
         x_train.append(scaled_data[i-PD:i, 0])
-        y_train.append(scaled_data[i, 0])
+        y_train.append(scaled_data[i:i+PDC, 0])
 
     x_train, y_train = np.array(x_train), np.array(y_train)
     #reshape [Muestras(samples), Pasos de Tiempo(timestep dias), Features(1 Close)]
@@ -50,7 +53,7 @@ def train_model():
 
     #capa 3 densa
     model.add(Dense(units=16, activation='relu')) #uso de relu por que dio mejor resutlado
-    model.add(Dense(units=1)) #precio
+    model.add(Dense(units=PDC)) #precio
 
     #compilar/optimizador y loss/checkpoint mejor modelo y metrica mae
     #opt = Adam(learning_rate=0.0008)
@@ -67,7 +70,7 @@ def train_model():
     #early stoping
     early_stopping = EarlyStopping(
     monitor='val_loss',
-    patience=11,        # espera n epocas
+    patience=15,        # espera n epocas
     restore_best_weights=True
     )
     
