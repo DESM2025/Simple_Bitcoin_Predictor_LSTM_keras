@@ -12,7 +12,6 @@ from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import LSTM, Dense, Dropout, BatchNormalization
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 
-# Configuracion de seed para reproducibilidad
 SEED = 42
 random.seed(SEED)
 np.random.seed(SEED)
@@ -33,17 +32,18 @@ def train_model_multi():
     # definir features, elimine el yuan para que el modelo funcione mejor
     features = ['CLP', 'Dolar_Index', 'Cobre']
     data = df[features].values # array de n_filas y columnas
+
     # scalers separados x para features e y para el target clp
     scaler_x = MinMaxScaler(feature_range=(0,1))
     scaled_data_x = scaler_x.fit_transform(data) # escala las 3 columnas
     scaler_y = MinMaxScaler(feature_range=(0,1))
-    scaler_y.fit(df[['CLP']].values) # escala el target para guardar su scaler propio
+    scaler_y.fit(df[['CLP']].values) # escala el target y guardar su scaler 
 
     # guardar scalers
     joblib.dump(scaler_x, os.path.join(MODEL_DIR, 'scaler_multi_X.gz'))
     joblib.dump(scaler_y, os.path.join(MODEL_DIR, 'scaler_multi_Y.gz'))
     
-    PD = 70  # subido a 70 dias para mas contexto, funciona mejor que en el univariado donde debe ser pequeño
+    PD = 70  # subido a 70 dias para mas contexto, funciona mejor que en el univariado donde funcionaba mejor uno pequeño
     PDC = 7  # tambien subi los dias a predecir, ya que el modelo al tener mas features en teoria puede manejar mejor la prediccion a mas dias
         
     x_train = []
@@ -57,12 +57,12 @@ def train_model_multi():
     x_train, y_train = np.array(x_train), np.array(y_train) # reshape  a x(samples, pasos_tiempo, features=3), y (samples, PDC)
     x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], len(features)))
 
-    #separacion de datos train/val/test a diferencia de los dos modelos univariados
+    #separacion de datos train/val/test a diferencia de los dos modelos univariados que use validation_split
     total_samples = len(x_train)
     train_end = int(total_samples * 0.8) #80% train
     val_end = int(total_samples * 0.9)   #10% validar y el 10% resante test 
 
-    X_train = x_train[:train_end] # el modelo entrena con el 80% de los datos
+    X_train = x_train[:train_end] #80% 
     y_train_split = y_train[:train_end]
 
     X_val = x_train[train_end:val_end] #10%
@@ -82,7 +82,7 @@ def train_model_multi():
 
     # LSTM basado en el univariado pero adaptado a multivariable cambiando parametros, en general mas pequeño que el univariado para evitar overfitting
     model = Sequential()
-    # capa 1, agregar regularización L2 no funciono      
+    # capa 1, agregar regularización L2 no mejoro   
     model.add(LSTM(units=45, return_sequences=False, input_shape=(X_train.shape[1], X_train.shape[2]))) #reduci las neuronas por que tiende a sobreajustarse si uso las des univariado
     model.add(Dropout(0.20)) #menos dropout por lo mismo(20), con 25 tambien va bien
                       
@@ -113,7 +113,7 @@ def train_model_multi():
         restore_best_weights=True
     )
     
-    #reducir learning rate si se estanca no me funciono
+    #reducir learning rate no me funciono
     #reduce_lr = ReduceLROnPlateau(
     #    monitor='val_loss',
     #    factor=0.5,
